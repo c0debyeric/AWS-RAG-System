@@ -1,0 +1,21 @@
+aws_region           = "us-east-1"
+environment          = "dev"
+project_name         = "teams-rag-chatbot"
+
+# Networking
+vpc_id             = "vpc-xxxxxxxxx"
+vpc_cidr           = "10.0.0.0/16"
+private_subnet_ids = ["subnet-xxx", "subnet-yyy"]
+
+# SharePoint configuration
+# sharepoint_tenant_id     = "your-tenant-id"
+# sharepoint_client_id     = "your-client-id"
+# sharepoint_client_secret = "your-client-secret"
+sharepoint_site_urls = ["https://yourtenant.sharepoint.com/sites/your-site"]
+
+# Aurora PostgreSQL
+# db_master_password = "your-secure-password"
+
+# Bot configuration
+# bot_app_id       = "your-azure-bot-app-id"
+# bot_app_password = "your-azure-bot-app-password"
