@@ -3,11 +3,10 @@
 Each Lambda zip includes:
   - The handler file
   - Shared src/ modules (common, ingestion, retrieval, conversation_logging)
-  - pip dependencies
+  - Dependencies (installed via uv)
 """
 import os
 import subprocess
-import sys
 import tempfile
 import zipfile
 import shutil
@@ -50,7 +49,7 @@ def copy_shared_modules(dest_dir: str):
 
 
 def install_requirements(requirements: list[str], dest_dir: str):
-    """Install pip packages into dest_dir."""
+    """Install packages into dest_dir using uv."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as req_file:
         req_file.write("\n".join(requirements))
         req_file.flush()
@@ -58,15 +57,13 @@ def install_requirements(requirements: list[str], dest_dir: str):
 
     try:
         subprocess.check_call([
-            sys.executable, "-m", "pip", "install",
+            "uv", "pip", "install",
             "-r", req_path,
-            "-t", dest_dir,
+            "--target", dest_dir,
             "--quiet",
-            "--no-cache-dir",
-            "--platform", "manylinux2014_x86_64",
-            "--implementation", "cp",
+            "--no-build",
+            "--python-platform", "manylinux2014_x86_64",
             "--python-version", "3.13",
-            "--only-binary=:all:",
         ])
     finally:
         os.unlink(req_path)
