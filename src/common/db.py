@@ -44,12 +44,3 @@ def get_connection():
     register_vector(_connection)
 
     return _connection
-
-
-def execute_query(query: str, params=None, fetch: bool = True):
-    """Execute a query and optionally return results as dicts."""
-    conn = get_connection()
-    with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute(query, params)
-        if fetch:
-            return cur.fetchall()

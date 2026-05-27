@@ -67,7 +67,7 @@ def install_requirements(requirements: list[str], dest_dir: str):
             "--target", dest_dir,
             "--quiet",
             "--no-build",
-            "--python-platform", "manylinux2014_x86_64",
+            "--python-platform", "manylinux2014_aarch64",
             "--python-version", "3.13",
         ])
     finally:

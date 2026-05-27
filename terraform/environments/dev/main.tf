@@ -51,6 +51,7 @@ module "bot_service" {
 
   project_name          = var.project_name
   environment           = var.environment
+  aws_region            = var.aws_region
   generation_model_id   = var.generation_model_id
   embedding_model_id    = var.embedding_model_id
   db_secret_arn         = module.bedrock_kb.aurora_credentials_secret_arn
@@ -58,6 +59,7 @@ module "bot_service" {
   documents_bucket_arn  = module.bedrock_kb.documents_bucket_arn
   private_subnet_ids    = var.private_subnet_ids
   vpc_id                = var.vpc_id
+  powertools_layer_arn  = var.powertools_layer_arn
 }
 
 # --- SharePoint-to-S3 Sync ---

@@ -16,7 +16,7 @@ dev-db:
 	@echo "pgvector running on localhost:5432  (db=ragdb user=postgres pass=localdev)"
 
 setup-db:
-	python scripts/setup_db.py
+	python scripts/setup_pgvector.py
 
 ingest:
 	python scripts/ingest.py $(ARGS)

@@ -19,13 +19,19 @@ variable "project_name" {
 variable "generation_model_id" {
   description = "Bedrock foundation model for generation"
   type        = string
-  default     = "anthropic.claude-3-haiku-20240307-v1:0"
+  default     = "amazon.nova-pro-v1:0"
 }
 
 variable "embedding_model_id" {
   description = "Bedrock embedding model ID"
   type        = string
   default     = "amazon.titan-embed-text-v2:0"
+}
+
+variable "powertools_layer_arn" {
+  description = "ARN for AWS Lambda Powertools Python layer"
+  type        = string
+  default     = "arn:aws:lambda:us-east-1:017000801446:layer:AWSLambdaPowertoolsPythonV3-python313-arm64:29"
 }
 
 # --- Networking (existing VPC) ---

@@ -82,15 +82,22 @@ resource "aws_lambda_function" "sharepoint_sync" {
   runtime       = "python3.13"
   timeout       = 900 # 15 min max — large doc libraries need time
   memory_size   = 512
+  architectures = ["arm64"]
 
   # Placeholder — replaced by deploy script
   filename = "${path.module}/placeholder.zip"
+
+  logging_config {
+    log_format = "JSON"
+  }
 
   environment {
     variables = {
       DOCUMENTS_BUCKET     = var.documents_bucket_name
       SHAREPOINT_SECRET_ARN = aws_secretsmanager_secret.sharepoint_creds.arn
       SHAREPOINT_SITE_URL  = var.sharepoint_site_url
+      POWERTOOLS_SERVICE_NAME = "sharepoint-sync"
+      POWERTOOLS_LOG_LEVEL    = "INFO"
     }
   }
 }

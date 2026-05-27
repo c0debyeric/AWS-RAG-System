@@ -47,8 +47,12 @@ data "aws_iam_policy_document" "bot_lambda_permissions" {
   statement {
     actions = [
       "bedrock:InvokeModel",
+      "bedrock:InvokeModelWithResponseStream",
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:bedrock:${var.aws_region}::foundation-model/${var.generation_model_id}",
+      "arn:aws:bedrock:${var.aws_region}::foundation-model/${var.embedding_model_id}",
+    ]
   }
 
   # DB credentials
@@ -96,9 +100,16 @@ resource "aws_lambda_function" "bot_handler" {
   runtime       = "python3.13"
   timeout       = 30
   memory_size   = 256
+  architectures = ["arm64"]
+
+  layers = [var.powertools_layer_arn]
 
   # Placeholder — will be replaced by CI/CD pipeline
   filename = "${path.module}/placeholder.zip"
+
+  logging_config {
+    log_format = "JSON"
+  }
 
   vpc_config {
     subnet_ids         = var.private_subnet_ids
@@ -113,6 +124,8 @@ resource "aws_lambda_function" "bot_handler" {
       TOP_K               = "5"
       CHUNK_SIZE          = "512"
       CHUNK_OVERLAP       = "100"
+      POWERTOOLS_SERVICE_NAME = "query-handler"
+      POWERTOOLS_LOG_LEVEL    = "INFO"
     }
   }
 }
@@ -124,8 +137,15 @@ resource "aws_lambda_function" "ingest_handler" {
   runtime       = "python3.13"
   timeout       = 300
   memory_size   = 512
+  architectures = ["arm64"]
+
+  layers = [var.powertools_layer_arn]
 
   filename = "${path.module}/placeholder.zip"
+
+  logging_config {
+    log_format = "JSON"
+  }
 
   vpc_config {
     subnet_ids         = var.private_subnet_ids
@@ -140,6 +160,8 @@ resource "aws_lambda_function" "ingest_handler" {
       TOP_K               = "5"
       CHUNK_SIZE          = "512"
       CHUNK_OVERLAP       = "100"
+      POWERTOOLS_SERVICE_NAME = "ingest-handler"
+      POWERTOOLS_LOG_LEVEL    = "INFO"
     }
   }
 }
@@ -151,8 +173,13 @@ resource "aws_lambda_function" "pgvector_setup" {
   runtime       = "python3.13"
   timeout       = 300
   memory_size   = 256
+  architectures = ["arm64"]
 
   filename = "${path.module}/placeholder.zip"
+
+  logging_config {
+    log_format = "JSON"
+  }
 
   vpc_config {
     subnet_ids         = var.private_subnet_ids

@@ -8,10 +8,20 @@ variable "environment" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS region for resource ARN construction"
+  type        = string
+}
+
+variable "powertools_layer_arn" {
+  description = "ARN for AWS Lambda Powertools Python layer"
+  type        = string
+}
+
 variable "generation_model_id" {
   description = "Bedrock model ID for answer generation"
   type        = string
-  default     = "anthropic.claude-3-haiku-20240307-v1:0"
+  default     = "amazon.nova-pro-v1:0"
 }
 
 variable "embedding_model_id" {
