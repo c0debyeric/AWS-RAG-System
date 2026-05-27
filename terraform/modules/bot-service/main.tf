@@ -1,6 +1,6 @@
 locals {
-  name_prefix  = "${var.project_name}-${var.environment}"
-  function_name = "${local.name_prefix}-bot-handler"
+  name_prefix   = "${var.project_name}-${var.environment}"
+  function_name = "${local.name_prefix}-query-handler"
 }
 
 # --- Lambda Function for Bot Handler ---
@@ -19,6 +19,19 @@ resource "aws_iam_role" "bot_lambda" {
   assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
 }
 
+resource "aws_security_group" "lambda" {
+  name        = "${local.name_prefix}-lambda-sg"
+  description = "Security group for query and ingest Lambdas"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 data "aws_iam_policy_document" "bot_lambda_permissions" {
   # CloudWatch Logs
   statement {
@@ -30,22 +43,32 @@ data "aws_iam_policy_document" "bot_lambda_permissions" {
     resources = ["arn:aws:logs:*:*:*"]
   }
 
-  # Bedrock KB retrieval
+  # Bedrock invocation for embeddings + generation
   statement {
     actions = [
-      "bedrock:RetrieveAndGenerate",
-      "bedrock:Retrieve",
       "bedrock:InvokeModel",
     ]
     resources = ["*"]
   }
 
-  # Secrets Manager (bot credentials)
+  # DB credentials
   statement {
     actions = [
       "secretsmanager:GetSecretValue",
     ]
-    resources = [aws_secretsmanager_secret.bot_creds.arn]
+    resources = [var.db_secret_arn]
+  }
+
+  # S3 access for ingestion Lambda and any document fetches
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      var.documents_bucket_arn,
+      "${var.documents_bucket_arn}/*",
+    ]
   }
 }
 
@@ -60,18 +83,9 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# --- Secrets for Bot Credentials ---
-resource "aws_secretsmanager_secret" "bot_creds" {
-  name        = "${local.name_prefix}/bot-credentials"
-  description = "Azure Bot Service app credentials"
-}
-
-resource "aws_secretsmanager_secret_version" "bot_creds" {
-  secret_id = aws_secretsmanager_secret.bot_creds.id
-  secret_string = jsonencode({
-    MicrosoftAppId       = var.bot_app_id
-    MicrosoftAppPassword = var.bot_app_password
-  })
+resource "aws_iam_role_policy_attachment" "lambda_vpc" {
+  role       = aws_iam_role.bot_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 # --- Lambda Function ---
@@ -86,11 +100,68 @@ resource "aws_lambda_function" "bot_handler" {
   # Placeholder — will be replaced by CI/CD pipeline
   filename = "${path.module}/placeholder.zip"
 
+  vpc_config {
+    subnet_ids         = var.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
   environment {
     variables = {
-      KNOWLEDGE_BASE_ID   = var.knowledge_base_id
-      FOUNDATION_MODEL_ID = var.foundation_model_id
-      BOT_SECRET_ARN      = aws_secretsmanager_secret.bot_creds.arn
+      DB_SECRET_ARN       = var.db_secret_arn
+      EMBEDDING_MODEL_ID  = var.embedding_model_id
+      GENERATION_MODEL_ID = var.generation_model_id
+      TOP_K               = "5"
+      CHUNK_SIZE          = "512"
+      CHUNK_OVERLAP       = "100"
+    }
+  }
+}
+
+resource "aws_lambda_function" "ingest_handler" {
+  function_name = "${local.name_prefix}-ingest-handler"
+  role          = aws_iam_role.bot_lambda.arn
+  handler       = "ingest_handler.handler"
+  runtime       = "python3.11"
+  timeout       = 300
+  memory_size   = 512
+
+  filename = "${path.module}/placeholder.zip"
+
+  vpc_config {
+    subnet_ids         = var.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  environment {
+    variables = {
+      DB_SECRET_ARN       = var.db_secret_arn
+      EMBEDDING_MODEL_ID  = var.embedding_model_id
+      GENERATION_MODEL_ID = var.generation_model_id
+      TOP_K               = "5"
+      CHUNK_SIZE          = "512"
+      CHUNK_OVERLAP       = "100"
+    }
+  }
+}
+
+resource "aws_lambda_function" "pgvector_setup" {
+  function_name = "${local.name_prefix}-pgvector-setup"
+  role          = aws_iam_role.bot_lambda.arn
+  handler       = "setup_handler.handler"
+  runtime       = "python3.11"
+  timeout       = 300
+  memory_size   = 256
+
+  filename = "${path.module}/placeholder.zip"
+
+  vpc_config {
+    subnet_ids         = var.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  environment {
+    variables = {
+      DB_SECRET_ARN = var.db_secret_arn
     }
   }
 }
@@ -126,4 +197,23 @@ resource "aws_lambda_permission" "apigw" {
   function_name = aws_lambda_function.bot_handler.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.bot.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "s3_ingest" {
+  statement_id  = "AllowS3InvokeIngest"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.ingest_handler.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = var.documents_bucket_arn
+}
+
+resource "aws_s3_bucket_notification" "documents_ingest" {
+  bucket = var.documents_bucket_name
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.ingest_handler.arn
+    events              = ["s3:ObjectCreated:*"]
+  }
+
+  depends_on = [aws_lambda_permission.s3_ingest]
 }

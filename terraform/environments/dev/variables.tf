@@ -16,10 +16,16 @@ variable "project_name" {
   default     = "teams-rag-chatbot"
 }
 
-variable "foundation_model_id" {
+variable "generation_model_id" {
   description = "Bedrock foundation model for generation"
   type        = string
-  default     = "amazon.nova-pro-v1:0"
+  default     = "anthropic.claude-3-haiku-20240307-v1:0"
+}
+
+variable "embedding_model_id" {
+  description = "Bedrock embedding model ID"
+  type        = string
+  default     = "amazon.titan-embed-text-v2:0"
 }
 
 # --- Networking (existing VPC) ---
@@ -46,6 +52,12 @@ variable "db_master_password" {
   description = "Aurora PostgreSQL master password"
   type        = string
   sensitive   = true
+}
+
+variable "db_name" {
+  description = "Aurora PostgreSQL database name"
+  type        = string
+  default     = "ragdb"
 }
 
 # --- SharePoint ---
@@ -76,17 +88,3 @@ variable "sharepoint_client_secret" {
   sensitive   = true
 }
 
-# --- Bot (optional for Phase A testing) ---
-variable "bot_app_id" {
-  description = "Azure Bot App ID"
-  type        = string
-  default     = "placeholder"
-  sensitive   = true
-}
-
-variable "bot_app_password" {
-  description = "Azure Bot App Password"
-  type        = string
-  default     = "placeholder"
-  sensitive   = true
-}

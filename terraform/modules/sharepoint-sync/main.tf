@@ -66,14 +66,6 @@ data "aws_iam_policy_document" "sync_permissions" {
     ]
     resources = [aws_secretsmanager_secret.sharepoint_creds.arn]
   }
-
-  # Bedrock — trigger ingestion
-  statement {
-    actions = [
-      "bedrock:StartIngestionJob",
-    ]
-    resources = [var.knowledge_base_arn]
-  }
 }
 
 resource "aws_iam_role_policy" "sync_lambda" {
@@ -97,8 +89,6 @@ resource "aws_lambda_function" "sharepoint_sync" {
   environment {
     variables = {
       DOCUMENTS_BUCKET     = var.documents_bucket_name
-      KNOWLEDGE_BASE_ID    = var.knowledge_base_id
-      DATA_SOURCE_ID       = var.data_source_id
       SHAREPOINT_SECRET_ARN = aws_secretsmanager_secret.sharepoint_creds.arn
       SHAREPOINT_SITE_URL  = var.sharepoint_site_url
     }

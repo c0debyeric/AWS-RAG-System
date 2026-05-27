@@ -10,8 +10,7 @@ import json
 import logging
 import os
 import tempfile
-from datetime import datetime, timezone
-from urllib.parse import quote, unquote
+from datetime import datetime
 
 import boto3
 import msal
@@ -21,12 +20,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 s3 = boto3.client("s3")
-bedrock_agent = boto3.client("bedrock-agent")
 secretsmanager = boto3.client("secretsmanager")
 
 BUCKET_NAME = os.environ["DOCUMENTS_BUCKET"]
-KNOWLEDGE_BASE_ID = os.environ["KNOWLEDGE_BASE_ID"]
-DATA_SOURCE_ID = os.environ["DATA_SOURCE_ID"]
 SHAREPOINT_SECRET_ARN = os.environ["SHAREPOINT_SECRET_ARN"]
 SHAREPOINT_SITE_URL = os.environ["SHAREPOINT_SITE_URL"]
 
@@ -58,10 +54,6 @@ def handler(event, context):
     synced, skipped, failed = sync_files(access_token, drive_id, site_id)
 
     logger.info(f"Sync complete: {synced} synced, {skipped} skipped, {failed} failed")
-
-    # Trigger Bedrock KB ingestion if any files were synced
-    if synced > 0:
-        trigger_ingestion()
 
     return {
         "statusCode": 200,
@@ -240,13 +232,3 @@ def download_and_upload(access_token, site_id, item, s3_key):
             },
         )
 
-
-def trigger_ingestion():
-    """Start a Bedrock KB ingestion job."""
-    logger.info("Triggering Bedrock KB ingestion...")
-    response = bedrock_agent.start_ingestion_job(
-        knowledgeBaseId=KNOWLEDGE_BASE_ID,
-        dataSourceId=DATA_SOURCE_ID,
-    )
-    job_id = response["ingestionJob"]["ingestionJobId"]
-    logger.info(f"Ingestion job started: {job_id}")

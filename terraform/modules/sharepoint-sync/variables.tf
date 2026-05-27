@@ -30,22 +30,6 @@ variable "sharepoint_client_secret" {
   sensitive   = true
 }
 
-# --- Bedrock KB references ---
-variable "knowledge_base_id" {
-  description = "Bedrock Knowledge Base ID"
-  type        = string
-}
-
-variable "knowledge_base_arn" {
-  description = "Bedrock Knowledge Base ARN"
-  type        = string
-}
-
-variable "data_source_id" {
-  description = "Bedrock Data Source ID"
-  type        = string
-}
-
 variable "documents_bucket_name" {
   description = "S3 bucket name for documents"
   type        = string

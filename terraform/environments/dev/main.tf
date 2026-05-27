@@ -42,19 +42,22 @@ module "bedrock_kb" {
   vpc_cidr           = var.vpc_cidr
   private_subnet_ids = var.private_subnet_ids
   db_master_password = var.db_master_password
-  foundation_model_id = var.foundation_model_id
+  db_name            = var.db_name
 }
 
 # --- Bot Service (API Gateway + Lambda) ---
 module "bot_service" {
   source = "../../modules/bot-service"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  knowledge_base_id  = module.bedrock_kb.knowledge_base_id
-  foundation_model_id = var.foundation_model_id
-  bot_app_id         = var.bot_app_id
-  bot_app_password   = var.bot_app_password
+  project_name          = var.project_name
+  environment           = var.environment
+  generation_model_id   = var.generation_model_id
+  embedding_model_id    = var.embedding_model_id
+  db_secret_arn         = module.bedrock_kb.aurora_credentials_secret_arn
+  documents_bucket_name = module.bedrock_kb.documents_bucket_name
+  documents_bucket_arn  = module.bedrock_kb.documents_bucket_arn
+  private_subnet_ids    = var.private_subnet_ids
+  vpc_id                = var.vpc_id
 }
 
 # --- SharePoint-to-S3 Sync ---
@@ -64,29 +67,45 @@ module "sharepoint_sync" {
   project_name = var.project_name
   environment  = var.environment
 
-  sharepoint_site_url    = var.sharepoint_site_url
-  sharepoint_tenant_id   = var.sharepoint_tenant_id
-  sharepoint_client_id   = var.sharepoint_client_id
+  sharepoint_site_url      = var.sharepoint_site_url
+  sharepoint_tenant_id     = var.sharepoint_tenant_id
+  sharepoint_client_id     = var.sharepoint_client_id
   sharepoint_client_secret = var.sharepoint_client_secret
 
-  knowledge_base_id    = module.bedrock_kb.knowledge_base_id
-  knowledge_base_arn   = module.bedrock_kb.knowledge_base_arn
-  data_source_id       = module.bedrock_kb.data_source_id
   documents_bucket_name = module.bedrock_kb.documents_bucket_name
   documents_bucket_arn  = module.bedrock_kb.documents_bucket_arn
 }
 
-# --- Outputs ---
-output "knowledge_base_id" {
-  value = module.bedrock_kb.knowledge_base_id
+resource "terraform_data" "pgvector_setup" {
+  triggers_replace = [module.bedrock_kb.aurora_cluster_endpoint]
+
+  provisioner "local-exec" {
+    interpreter = ["PowerShell", "-Command"]
+    command     = "aws lambda invoke --function-name \"${module.bot_service.pgvector_setup_lambda_function_name}\" --payload '{\"action\":\"setup\"}' --cli-binary-format raw-in-base64-out \"${path.root}/pgvector-setup-response.json\""
+  }
+
+  depends_on = [module.bot_service]
 }
 
+# --- Outputs ---
 output "documents_bucket" {
   value = module.bedrock_kb.documents_bucket_name
 }
 
+output "aurora_endpoint" {
+  value = module.bedrock_kb.aurora_cluster_endpoint
+}
+
+output "aurora_secret_arn" {
+  value = module.bedrock_kb.aurora_credentials_secret_arn
+}
+
 output "api_gateway_url" {
   value = module.bot_service.api_gateway_url
+}
+
+output "ingest_lambda" {
+  value = module.bot_service.ingest_lambda_function_name
 }
 
 output "sharepoint_sync_lambda" {

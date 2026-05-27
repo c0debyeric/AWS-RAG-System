@@ -1,6 +1,9 @@
 aws_region           = "us-east-1"
 environment          = "dev"
 project_name         = "teams-rag-chatbot"
+generation_model_id  = "anthropic.claude-3-haiku-20240307-v1:0"
+embedding_model_id   = "amazon.titan-embed-text-v2:0"
+db_name              = "ragdb"
 
 # Networking
 vpc_id             = "vpc-xxxxxxxxx"
@@ -11,11 +14,10 @@ private_subnet_ids = ["subnet-xxx", "subnet-yyy"]
 # sharepoint_tenant_id     = "your-tenant-id"
 # sharepoint_client_id     = "your-client-id"
 # sharepoint_client_secret = "your-client-secret"
-sharepoint_site_urls = ["https://yourtenant.sharepoint.com/sites/your-site"]
+sharepoint_site_url        = "https://yourtenant.sharepoint.com/sites/your-site"
 
 # Aurora PostgreSQL
 # db_master_password = "your-secure-password"
 
 # Bot configuration
-# bot_app_id       = "your-azure-bot-app-id"
-# bot_app_password = "your-azure-bot-app-password"
+# (Azure Bot registration handled separately)
