@@ -79,7 +79,7 @@ resource "aws_lambda_function" "sharepoint_sync" {
   function_name = local.function_name
   role          = aws_iam_role.sync_lambda.arn
   handler       = "sync.handler"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
   timeout       = 900 # 15 min max — large doc libraries need time
   memory_size   = 512
 

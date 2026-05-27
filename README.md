@@ -124,7 +124,7 @@ cis-tool-teams-rag-chatbot/
 - Azure AD app registration (for Teams bot)
 - SharePoint site with Graph API permissions granted
 - Terraform >= 1.5
-- Python >= 3.11
+- Python >= 3.13
 
 ---
 

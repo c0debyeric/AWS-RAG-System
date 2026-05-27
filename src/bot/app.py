@@ -9,8 +9,11 @@ import logging
 import os
 import sys
 
-# Add src directory to path for shared modules
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# Ensure src modules are importable in Lambda flat-zip layout
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    sys.path.insert(0, os.environ.get("LAMBDA_TASK_ROOT", "/var/task"))
+else:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from retrieval.search import vector_search
 from retrieval.generator import generate_answer

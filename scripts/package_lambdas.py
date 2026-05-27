@@ -18,26 +18,26 @@ SRC_DIR = os.path.join(PROJECT_ROOT, "src")
 # Shared modules that get bundled into Lambda zips
 SHARED_MODULES = ["common", "ingestion", "retrieval", "conversation_logging"]
 
-# Dependencies for each Lambda
+# Dependencies for each Lambda (pinned to latest stable)
 BOT_REQUIREMENTS = [
-    "boto3>=1.34",
-    "psycopg2-binary>=2.9",
-    "pgvector>=0.3",
-    "tiktoken>=0.7",
-    "numpy>=1.26",
-    "pdfplumber>=0.11",
-    "python-docx>=1.1",
-    "beautifulsoup4>=4.12",
+    "boto3>=1.36,<2",
+    "psycopg2-binary>=2.9.10,<3",
+    "pgvector>=0.3.6,<1",
+    "tiktoken>=0.8,<1",
+    "numpy>=2.0,<3",
+    "pdfplumber>=0.11.4,<1",
+    "python-docx>=1.1.2,<2",
+    "beautifulsoup4>=4.12.3,<5",
 ]
 
 SETUP_REQUIREMENTS = [
-    "psycopg2-binary>=2.9",
+    "psycopg2-binary>=2.9.10,<3",
 ]
 
 SYNC_REQUIREMENTS = [
-    "boto3>=1.34",
-    "msal>=1.28",
-    "requests>=2.31",
+    "boto3>=1.36,<2",
+    "msal>=1.31,<2",
+    "requests>=2.32,<3",
 ]
 
 
@@ -63,6 +63,10 @@ def install_requirements(requirements: list[str], dest_dir: str):
             "-t", dest_dir,
             "--quiet",
             "--no-cache-dir",
+            "--platform", "manylinux2014_x86_64",
+            "--implementation", "cp",
+            "--python-version", "3.13",
+            "--only-binary=:all:",
         ])
     finally:
         os.unlink(req_path)
@@ -162,14 +166,19 @@ def main():
     package_sharepoint_sync()
 
     print("\n=== Done! Deploy with: ===")
-    print("  aws lambda update-function-code --function-name <project>-<environment>-pgvector-setup \\")
+    print("  # Small zips (< 50 MB) — direct upload:")
+    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-pgvector-setup \\")
     print("    --zip-file fileb://build/pgvector-setup.zip --profile shared --region us-east-1")
-    print("  aws lambda update-function-code --function-name rag-bot-handler \\")
-    print("    --zip-file fileb://build/bot-handler.zip --profile shared --region us-east-1")
-    print("  aws lambda update-function-code --function-name rag-ingest-handler \\")
-    print("    --zip-file fileb://build/ingest-handler.zip --profile shared --region us-east-1")
-    print("  aws lambda update-function-code --function-name rag-sharepoint-sync \\")
+    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-sharepoint-sync \\")
     print("    --zip-file fileb://build/sharepoint-sync.zip --profile shared --region us-east-1")
+    print("")
+    print("  # Large zips (> 50 MB) — upload to S3 first:")
+    print("  aws s3 cp build/bot-handler.zip s3://teams-rag-chatbot-dev-documents-044061434394/lambda-artifacts/bot-handler.zip --profile shared --region us-east-1")
+    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-query-handler \\")
+    print("    --s3-bucket teams-rag-chatbot-dev-documents-044061434394 --s3-key lambda-artifacts/bot-handler.zip --profile shared --region us-east-1")
+    print("  aws s3 cp build/ingest-handler.zip s3://teams-rag-chatbot-dev-documents-044061434394/lambda-artifacts/ingest-handler.zip --profile shared --region us-east-1")
+    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-ingest-handler \\")
+    print("    --s3-bucket teams-rag-chatbot-dev-documents-044061434394 --s3-key lambda-artifacts/ingest-handler.zip --profile shared --region us-east-1")
 
 
 if __name__ == "__main__":

@@ -93,7 +93,7 @@ resource "aws_lambda_function" "bot_handler" {
   function_name = local.function_name
   role          = aws_iam_role.bot_lambda.arn
   handler       = "app.handler"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
   timeout       = 30
   memory_size   = 256
 
@@ -121,7 +121,7 @@ resource "aws_lambda_function" "ingest_handler" {
   function_name = "${local.name_prefix}-ingest-handler"
   role          = aws_iam_role.bot_lambda.arn
   handler       = "ingest_handler.handler"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
   timeout       = 300
   memory_size   = 512
 
@@ -148,7 +148,7 @@ resource "aws_lambda_function" "pgvector_setup" {
   function_name = "${local.name_prefix}-pgvector-setup"
   role          = aws_iam_role.bot_lambda.arn
   handler       = "setup_handler.handler"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
   timeout       = 300
   memory_size   = 256
 

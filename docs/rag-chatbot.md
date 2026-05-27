@@ -385,7 +385,7 @@ h3 { margin-bottom: 0.1em; }
 | Tool | Role |
 |---|---|
 | **Terraform** | Infrastructure as Code |
-| **Python 3.11** | Bot + sync Lambda runtime |
+| **Python 3.13** | Bot + sync Lambda runtime |
 
 </div>
 </div>

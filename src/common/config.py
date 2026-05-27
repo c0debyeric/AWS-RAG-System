@@ -13,7 +13,7 @@ class Config:
         default_factory=lambda: os.environ.get("EMBEDDING_MODEL_ID", "amazon.titan-embed-text-v2:0")
     )
     generation_model_id: str = field(
-        default_factory=lambda: os.environ.get("GENERATION_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0")
+        default_factory=lambda: os.environ.get("GENERATION_MODEL_ID", "anthropic.claude-sonnet-4-6")
     )
 
     # Database
