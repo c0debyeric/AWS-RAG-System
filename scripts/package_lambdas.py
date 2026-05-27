@@ -1,10 +1,15 @@
-"""Build Lambda deployment packages for the RAG chatbot.
+"""Build and optionally deploy Lambda deployment packages for the RAG chatbot.
 
 Each Lambda zip includes:
   - The handler file
   - Shared src/ modules (common, ingestion, retrieval, conversation_logging)
   - Dependencies (installed via uv)
+
+Usage:
+  python scripts/package_lambdas.py           # package only
+  python scripts/package_lambdas.py --deploy   # package + deploy all
 """
+import argparse
 import os
 import subprocess
 import tempfile
@@ -156,28 +161,84 @@ def package_sharepoint_sync():
         print(f"  Created {output}")
 
 
+AWS_PROFILE = "shared"
+AWS_REGION = "us-east-1"
+S3_BUCKET = "teams-rag-chatbot-dev-documents-044061434394"
+S3_PREFIX = "lambda-artifacts"
+
+# 50 MB — Lambda direct upload limit
+DIRECT_UPLOAD_LIMIT = 50 * 1024 * 1024
+
+# Map zip filenames → Lambda function names
+FUNCTION_MAP = {
+    "pgvector-setup.zip": "teams-rag-chatbot-dev-pgvector-setup",
+    "bot-handler.zip": "teams-rag-chatbot-dev-query-handler",
+    "ingest-handler.zip": "teams-rag-chatbot-dev-ingest-handler",
+    "sharepoint-sync.zip": "teams-rag-chatbot-dev-sharepoint-sync",
+}
+
+
+def deploy_lambda(zip_path: str, function_name: str):
+    """Deploy a Lambda zip — direct upload if < 50 MB, otherwise via S3."""
+    zip_name = os.path.basename(zip_path)
+    size = os.path.getsize(zip_path)
+
+    if size < DIRECT_UPLOAD_LIMIT:
+        print(f"  Deploying {zip_name} → {function_name} (direct upload)...")
+        subprocess.check_call([
+            "aws", "lambda", "update-function-code",
+            "--function-name", function_name,
+            "--zip-file", f"fileb://{zip_path}",
+            "--profile", AWS_PROFILE,
+            "--region", AWS_REGION,
+            "--output", "text",
+            "--query", "CodeSize",
+        ])
+    else:
+        s3_key = f"{S3_PREFIX}/{zip_name}"
+        print(f"  Uploading {zip_name} → s3://{S3_BUCKET}/{s3_key}...")
+        subprocess.check_call([
+            "aws", "s3", "cp", zip_path,
+            f"s3://{S3_BUCKET}/{s3_key}",
+            "--profile", AWS_PROFILE,
+            "--region", AWS_REGION,
+        ])
+        print(f"  Deploying {zip_name} → {function_name} (via S3)...")
+        subprocess.check_call([
+            "aws", "lambda", "update-function-code",
+            "--function-name", function_name,
+            "--s3-bucket", S3_BUCKET,
+            "--s3-key", s3_key,
+            "--profile", AWS_PROFILE,
+            "--region", AWS_REGION,
+            "--output", "text",
+            "--query", "CodeSize",
+        ])
+
+    print(f"  ✓ {function_name} deployed")
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Package and deploy Lambda functions")
+    parser.add_argument("--deploy", action="store_true", help="Deploy to AWS after packaging")
+    args = parser.parse_args()
+
+    os.makedirs(os.path.join(PROJECT_ROOT, "build"), exist_ok=True)
+
     package_pgvector_setup_handler()
     package_bot_handler()
     package_ingest_handler()
     package_sharepoint_sync()
 
-    print("\n=== Done! Deploy with: ===")
-    print("  # Small zips (< 50 MB) — direct upload:")
-    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-pgvector-setup \\")
-    print("    --zip-file fileb://build/pgvector-setup.zip --profile shared --region us-east-1")
-    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-sharepoint-sync \\")
-    print("    --zip-file fileb://build/sharepoint-sync.zip --profile shared --region us-east-1")
-    print("")
-    print("  # Large zips (> 50 MB) — upload to S3 first:")
-    print("  aws s3 cp build/bot-handler.zip s3://teams-rag-chatbot-dev-documents-044061434394/lambda-artifacts/bot-handler.zip --profile shared --region us-east-1")
-    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-query-handler \\")
-    print("    --s3-bucket teams-rag-chatbot-dev-documents-044061434394 --s3-key lambda-artifacts/bot-handler.zip --profile shared --region us-east-1")
-    print("  aws s3 cp build/ingest-handler.zip s3://teams-rag-chatbot-dev-documents-044061434394/lambda-artifacts/ingest-handler.zip --profile shared --region us-east-1")
-    print("  aws lambda update-function-code --function-name teams-rag-chatbot-dev-ingest-handler \\")
-    print("    --s3-bucket teams-rag-chatbot-dev-documents-044061434394 --s3-key lambda-artifacts/ingest-handler.zip --profile shared --region us-east-1")
+    if args.deploy:
+        print("\n=== Deploying to AWS ===")
+        for zip_name, function_name in FUNCTION_MAP.items():
+            zip_path = os.path.join(PROJECT_ROOT, "build", zip_name)
+            deploy_lambda(zip_path, function_name)
+        print("\n=== All functions deployed! ===")
+    else:
+        print("\n=== Done! Run with --deploy to push to AWS ===")
 
 
 if __name__ == "__main__":
-    os.makedirs(os.path.join(PROJECT_ROOT, "build"), exist_ok=True)
     main()
