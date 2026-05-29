@@ -184,7 +184,7 @@ def deploy_lambda(zip_path: str, function_name: str):
     size = os.path.getsize(zip_path)
 
     if size < DIRECT_UPLOAD_LIMIT:
-        print(f"  Deploying {zip_name} → {function_name} (direct upload)...")
+        print(f"  Deploying {zip_name} -> {function_name} (direct upload)...")
         subprocess.check_call([
             "aws", "lambda", "update-function-code",
             "--function-name", function_name,
@@ -196,14 +196,14 @@ def deploy_lambda(zip_path: str, function_name: str):
         ])
     else:
         s3_key = f"{S3_PREFIX}/{zip_name}"
-        print(f"  Uploading {zip_name} → s3://{S3_BUCKET}/{s3_key}...")
+        print(f"  Uploading {zip_name} -> s3://{S3_BUCKET}/{s3_key}...")
         subprocess.check_call([
             "aws", "s3", "cp", zip_path,
             f"s3://{S3_BUCKET}/{s3_key}",
             "--profile", AWS_PROFILE,
             "--region", AWS_REGION,
         ])
-        print(f"  Deploying {zip_name} → {function_name} (via S3)...")
+        print(f"  Deploying {zip_name} -> {function_name} (via S3)...")
         subprocess.check_call([
             "aws", "lambda", "update-function-code",
             "--function-name", function_name,
@@ -215,7 +215,7 @@ def deploy_lambda(zip_path: str, function_name: str):
             "--query", "CodeSize",
         ])
 
-    print(f"  ✓ {function_name} deployed")
+    print(f"  [ok] {function_name} deployed")
 
 
 def main():

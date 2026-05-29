@@ -1,0 +1,68 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "a4ffa7bd-a256-4daf-9a86-43e311049b20",
+  "developer": {
+    "name": "CIS Team",
+    "websiteUrl": "https://github.com",
+    "privacyUrl": "https://github.com",
+    "termsOfUseUrl": "https://github.com"
+  },
+  "name": {
+    "short": "RAG Assistant",
+    "full": "Internal Knowledge RAG Assistant"
+  },
+  "description": {
+    "short": "Ask questions about internal documentation",
+    "full": "AI-powered assistant that answers questions using internal team documentation from SharePoint, runbooks, and other knowledge sources. Powered by RAG (Retrieval-Augmented Generation) with source citations."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#6366f1",
+  "bots": [
+    {
+      "botId": "a4ffa7bd-a256-4daf-9a86-43e311049b20",
+      "scopes": ["personal", "team", "groupChat"],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal"],
+          "commands": [
+            {
+              "title": "What is the deployment checklist?",
+              "description": "Get the production deployment checklist steps"
+            },
+            {
+              "title": "How do I restart a server?",
+              "description": "Server restart procedure and approvals"
+            },
+            {
+              "title": "What is the incident response process?",
+              "description": "Incident severity levels, roles, and escalation"
+            },
+            {
+              "title": "How do I back up the database?",
+              "description": "Database backup runbook and restore steps"
+            },
+            {
+              "title": "How do I onboard a new AWS account?",
+              "description": "AWS account onboarding checklist"
+            },
+            {
+              "title": "How to spin up EC2 with Terraform?",
+              "description": "Terraform EC2 guide using HCP Terraform"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "bahplm89vd.execute-api.us-east-1.amazonaws.com"
+  ]
+}

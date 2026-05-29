@@ -87,6 +87,9 @@ resource "aws_lambda_function" "sharepoint_sync" {
   # Placeholder — replaced by deploy script
   filename = "${path.module}/placeholder.zip"
 
+  # Prevent duplicate concurrent invocations
+  reserved_concurrent_executions = 1
+
   logging_config {
     log_format = "JSON"
   }

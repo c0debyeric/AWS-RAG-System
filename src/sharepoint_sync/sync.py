@@ -35,6 +35,13 @@ SUPPORTED_EXTENSIONS = {
     ".csv", ".json", ".xml",
 }
 
+# Folders to skip during sync (case-insensitive prefix match)
+EXCLUDED_FOLDERS = {
+    "tools/scoutsuite-master",
+    "azure invoices",
+    "aws invoices",
+}
+
 
 def handler(event, context):
     """Lambda handler — sync SharePoint docs to S3, then trigger ingestion."""
@@ -153,6 +160,10 @@ def sync_files(access_token, drive_id, site_id):
                 s3_key = f"sharepoint/{prefix}{name}" if prefix else f"sharepoint/{name}"
 
                 if "folder" in item:
+                    folder_path = f"{prefix}{name}".lower()
+                    if any(folder_path.startswith(exc) for exc in EXCLUDED_FOLDERS):
+                        logger.info(f"Skipping excluded folder: {prefix}{name}")
+                        continue
                     # Queue folder for recursive processing
                     folder_url = f"{GRAPH_API_BASE}/sites/{site_id}/drive/items/{item['id']}/children"
                     stack.append((f"{prefix}{name}/", folder_url))

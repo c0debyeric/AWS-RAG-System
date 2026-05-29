@@ -111,7 +111,7 @@ style: |
 <!-- _class: lead -->
 <!-- _paginate: skip -->
 
-# SharePoint RAG Chatbot
+# Internal Knowledge RAG Chatbot
 
 ## AI-Powered Knowledge Assistant for Microsoft Teams
 
@@ -126,15 +126,15 @@ May 2026
 
 # The Problem
 
-### Finding information across SharePoint is painful
+### Finding information across internal docs is painful
 
 <div class="columns">
 <div>
 
 **What employees experience today:**
 
-- 📂 Documents scattered across multiple SharePoint sites
-- 🔍 Native search returns too many irrelevant results
+- 📂 Documentation scattered across SharePoint, repos, wikis, and runbooks
+- 🔍 No single search that spans all sources effectively
 - ⏳ Hours wasted hunting for the right document
 - 🔁 Repeat questions to SMEs who already documented answers
 
@@ -188,6 +188,51 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that:
 
 ---
 
+# Team-Relevant Example Questions
+
+<style scoped>
+li { font-size: 0.9em; }
+blockquote { font-size: 0.86em; }
+</style>
+
+- **Terraform / HCP**: "How do I spin up an EC2 instance using HCP Terraform?"
+- **Security**: "Which instance profiles are required for this EC2 role while maintaining least privilege?"
+- **Networking**: "I need a Fortigate firewall rule update in the non-prod TGW account. What ServiceNow request type should I submit?"
+- **Operations**: "How does our SSM automation handle patching and domain join?"
+
+> These are the types of questions this assistant is optimized to answer using citations from SharePoint, README files, runbooks, and other internal documentation.
+
+---
+
+<!-- _class: accent -->
+<!-- _paginate: skip -->
+
+# Impact & Results
+
+<div class="columns">
+<div>
+
+### Before
+
+- Employees spend **15–30 min** searching for answers
+- SMEs interrupted **multiple times daily** with repeat questions
+- New hires take weeks to find key documentation
+
+</div>
+<div>
+
+### After
+
+- Answers in **< 10 seconds** with source citations
+- Self-service reduces SME interruptions
+- Onboarding accelerated — instant access to internal knowledge
+- **24/7 availability** — the bot never goes on PTO
+
+</div>
+</div>
+
+---
+
 <!-- _class: accent -->
 <!-- _paginate: skip -->
 
@@ -199,8 +244,8 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that:
 ### 🤖 Intelligent Answers
 Claude generates responses grounded in indexed team documentation
 
-### 🔄 Auto-Syncing
-Documentation can be ingested from SharePoint, README files, and operational docs
+### 🔄 Auto-Syncing Sources
+Ingests from SharePoint, README files, runbooks — supports PDF, Word, Excel, Markdown, and more
 
 ### 📎 Source Citations
 Every answer links back to the original source document
@@ -209,13 +254,13 @@ Every answer links back to the original source document
 <div>
 
 ### 💬 Teams Native
-Chat bot directly inside Microsoft Teams — DM or channel
+Chat directly inside Microsoft Teams — DM or channel
 
 ### 🔒 Fully Managed Infra
-Serverless API + Lambda with Aurora pgvector as the vector store
+Serverless on AWS (Lambda, Aurora pgvector) — Terraform IaC via HCP
 
-### 🏗️ Infrastructure as Code
-Terraform-first workflow (HCP Terraform standard process)
+### 🕒 Always Up-to-Date
+EventBridge schedules auto-sync every 6 hours
 
 </div>
 </div>
@@ -270,42 +315,6 @@ h1 { margin-bottom: 0.2em; }
 
 ---
 
-# How It Works — Data Ingestion
-
-<style scoped>
-pre { font-size: 0.65em; line-height: 1.15; }
-pre code { color: #a5b4fc; }
-ol { font-size: 0.88em; }
-h3 { margin-bottom: 0.1em; }
-</style>
-
-### Documentation Sources → S3 → Vector Store
-
-```
-  ┌──────────────┐   MS Graph API   ┌──────────────────────┐     ┌──────────┐
-  │ SharePoint   │ ───────────────▶ │ SharePoint Sync      │ ──▶ │   S3     │
-  │ team sites   │                  │ Lambda (scheduled)   │     │ Bucket   │
-  └──────────────┘                  └──────────────────────┘     └────┬─────┘
-                                                                         │
-  ┌──────────────┐   local/repo docs                                     │
-  │ README files │ ──────────────────────────────────────────────────────▶│
-  │ runbooks     │                                                       │
-  └──────────────┘                                                       │
-                    ┌────────────────────────────────────────────────────┼────────────────────────────────────┐
-                    ▼                                                    ▼                                    ▼
-      ┌─────────────────────────────┐                    ┌─────────────────────────────┐       ┌──────────────────┐
-      │ One-time setup Lambda       │                    │ ingest_handler Lambda        │       │ Aurora PostgreSQL │
-      │ (schema bootstrap only)     │                    │ (parse/chunk/embed on S3)   │       │ + pgvector        │
-      └─────────────────────────────┘                    └─────────────────────────────┘       └──────────────────┘
-```
-
-1. **EventBridge** triggers SharePoint sync every 6 hours for cloud-hosted docs
-2. **Additional sources** such as README files and runbooks can also be ingested
-3. Ingestion path uses either **Bedrock KB ingestion job** or **custom ingest_handler**
-4. Final indexed chunks/vectors are stored in **Aurora PostgreSQL + pgvector**
-
----
-
 # How It Works — Query Flow
 
 <style scoped>
@@ -347,7 +356,37 @@ h3 { margin-bottom: 0.1em; }
 
 ---
 
+# Roadmap — What's Next
+
+| Phase | Focus | Status |
+|---|---|---|
+| **Phase A — MVP** | End-to-end Teams chatbot with basic RAG | ✅ Complete |
+| **Phase B — Advanced RAG** | Hybrid search, reranking, eval pipeline | 🔜 Next |
+| **Phase C — LangGraph Agent** | Multi-step reasoning, query routing, memory | 📋 Planned |
+
+<div class="columns">
+<div>
+
+### Phase B Highlights
+- **Hybrid search** — semantic + keyword for better recall
+- **Reranking** — Cohere reranker for precision
+- **Eval pipeline** — automated quality metrics
+
+</div>
+<div>
+
+### Phase C Highlights
+- **Query classification** — route simple vs. complex questions
+- **Conversation memory** — multi-turn context and follow-up handling
+- **Tool use** — follow-up searches, cross-doc summaries
+
+</div>
+</div>
+
+---
+
 <!-- _class: dense -->
+<!-- _paginate: skip -->
 
 # Technology Stack
 
@@ -384,180 +423,8 @@ h3 { margin-bottom: 0.1em; }
 
 | Tool | Role |
 |---|---|
-| **Terraform** | Infrastructure as Code |
+| **Terraform** | Infrastructure as Code (HCP Terraform) |
 | **Python 3.13** | Bot + sync Lambda runtime |
-
-</div>
-</div>
-
----
-
-# Security & Compliance
-
-<style scoped>
-li { font-size: 0.9em; }
-blockquote { font-size: 0.82em; margin-top: 0.6em; border-color: #6366f1; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.06)); }
-</style>
-
-<div class="columns">
-<div>
-
-### Data Protection
-
-- ✅ **S3 encryption** — KMS server-side encryption
-- ✅ **Aurora encryption** — Encrypted at rest
-- ✅ **VPC isolation** — Aurora runs in private subnets
-- ✅ **No public access** — S3 bucket fully locked down
-- ✅ **Secrets Manager** — No credentials in code
-
-</div>
-<div>
-
-### Access & Network
-
-- ✅ **IAM least privilege** — Scoped Lambda and Bedrock roles
-- ✅ **API Gateway** — HTTPS only, no direct invoke
-
-</div>
-</div>
-
-> **Note:** Access controls are enforced through IAM + network controls; workflow actions requiring firewall/TGW updates are routed through ServiceNow approvals.
-
----
-
-# Supported Document Types
-
-Current ingestion pipeline supports a wide range of documentation sources:
-
-<div class="columns">
-<div>
-
-### Documents
-- 📄 PDF
-- 📝 Word (.doc, .docx)
-- 📊 Excel (.xls, .xlsx)
-- 📑 PowerPoint (.ppt, .pptx)
-
-### Web Content
-- 🌐 HTML / HTM
-- 📋 Markdown (.md)
-
-</div>
-<div>
-
-### Data Files
-- 📊 CSV
-- 🔧 JSON
-- 📐 XML
-
-### Plain Text
-- 📝 TXT
-
-> The sync pipeline automatically filters for supported types and skips unsupported files.
-
-</div>
-</div>
-
----
-
-# Infrastructure as Code
-
-<style scoped>
-pre { font-size: 0.78em; line-height: 1.2; }
-pre code { color: #93c5fd; }
-table { font-size: 0.8em; }
-</style>
-
-### Modular Terraform — clean, repeatable, environment-aware
-
-```
-terraform/
-├── environments/
-│   ├── dev/            ← Lower capacity, skip_final_snapshot
-│   └── prod/           ← HA, deletion protection, backups
-└── modules/
-    ├── bedrock-kb/       ← Knowledge Base + Aurora pgvector + S3
-    ├── bot-service/      ← API Gateway + Lambda + Bot wiring
-    └── sharepoint-sync/  ← Sync Lambda + EventBridge schedule
-```
-
-| Decision | Rationale |
-|---|---|
-| Terraform module structure | Clear ownership across bedrock-kb, bot-service, sharepoint-sync |
-| Team standard workflow | HCP Terraform for plan/apply and approval gates |
-| State in current repo | S3 backend + lockfile configured in dev environment |
-| EC2 provisioning policy | Provision via Terraform workflows, not ad-hoc console changes |
-
----
-
-# Team-Relevant Example Questions
-
-<style scoped>
-li { font-size: 0.9em; }
-blockquote { font-size: 0.86em; }
-</style>
-
-- **Terraform / HCP**: "How do I spin up an EC2 instance using HCP Terraform?"
-- **Security**: "Which instance profiles are required for this EC2 role while maintaining least privilege?"
-- **Networking**: "I need a Fortigate firewall rule update in the non-prod TGW account. What ServiceNow request type should I submit?"
-- **Operations**: "How does our SSM automation handle patching and domain join?"
-
-> These are the types of questions this assistant is optimized to answer using citations from SharePoint, README files, runbooks, and other internal documentation.
-
----
-
-<!-- _class: accent -->
-<!-- _paginate: skip -->
-
-# Impact & Results
-
-<div class="columns">
-<div>
-
-### Before
-
-- Employees spend **15–30 min** searching for answers
-- SMEs interrupted **multiple times daily** with repeat questions
-- New hires take weeks to find key documentation
-
-</div>
-<div>
-
-### After
-
-- Answers in **< 10 seconds** with source citations
-- Self-service reduces SME interruptions
-- Onboarding accelerated — instant access to institutional knowledge
-- **24/7 availability** — the bot never goes on PTO
-
-</div>
-</div>
-
----
-
-# Roadmap — What's Next
-
-| Phase | Focus | Status |
-|---|---|---|
-| **Phase A — MVP** | End-to-end Teams chatbot with basic RAG | ✅ Complete |
-| **Phase B — Advanced RAG** | Hybrid search, reranking, eval pipeline | 🔜 Next |
-| **Phase C — LangGraph Agent** | Multi-step reasoning, query routing, memory | 📋 Planned |
-
-<div class="columns">
-<div>
-
-### Phase B Highlights
-- **Hybrid search** — semantic + keyword for better recall
-- **Reranking** — Cohere reranker for precision
-- **Eval pipeline** — automated quality metrics
-
-</div>
-<div>
-
-### Phase C Highlights
-- **Query classification** — route simple vs. complex questions
-- **Conversation memory** — multi-turn context and follow-up handling
-- **Tool use** — follow-up searches, cross-doc summaries
 
 </div>
 </div>
