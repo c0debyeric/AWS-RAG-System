@@ -240,6 +240,13 @@ resource "aws_s3_bucket_notification" "documents_ingest" {
   lambda_function {
     lambda_function_arn = aws_lambda_function.ingest_handler.arn
     events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "documents/"
+  }
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.ingest_handler.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "sharepoint/"
   }
 
   depends_on = [aws_lambda_permission.s3_ingest]
