@@ -38,19 +38,16 @@ variable "powertools_layer_arn" {
 variable "vpc_id" {
   description = "VPC ID for Aurora cluster"
   type        = string
-  default     = "vpc-04c3856083ffcad39"
 }
 
 variable "vpc_cidr" {
   description = "VPC CIDR block"
   type        = string
-  default     = "10.73.2.0/24"
 }
 
 variable "private_subnet_ids" {
   description = "Private subnet IDs for Aurora"
   type        = list(string)
-  default     = ["subnet-04efa035b190ccc70", "subnet-029ec0f20609bfbec"]
 }
 
 # --- Aurora ---
@@ -70,7 +67,7 @@ variable "db_name" {
 variable "sharepoint_site_url" {
   description = "SharePoint Online site URL"
   type        = string
-  default     = "https://rccl.sharepoint.com/sites/CloudInfrastructureServices"
+  default     = "https://your-tenant.sharepoint.com/sites/YourSite"
 }
 
 variable "sharepoint_tenant_id" {

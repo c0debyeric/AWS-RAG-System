@@ -8,7 +8,7 @@ variable "environment" {
 
 # --- SharePoint Configuration ---
 variable "sharepoint_site_url" {
-  description = "SharePoint Online site URL (e.g. https://rccl.sharepoint.com/sites/CloudInfrastructureServices)"
+  description = "SharePoint Online site URL (e.g. https://your-tenant.sharepoint.com/sites/YourSite)"
   type        = string
 }
 

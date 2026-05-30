@@ -9,25 +9,23 @@ terraform {
   }
 
   backend "s3" {
-    bucket       = "terraform-state-sharedservices-east-044061434394"
-    key          = "teams-rag-chatbot/dev/terraform.tfstate"
+    bucket       = "your-terraform-state-bucket"
+    key          = "enterprise-rag-chatbot/dev/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true
     use_lockfile = true
-    profile      = "shared"
   }
 }
 
 provider "aws" {
-  region  = var.aws_region
-  profile = "shared"
+  region = var.aws_region
 
   default_tags {
     tags = {
       Project     = "teams-rag-chatbot"
       Environment = var.environment
       ManagedBy   = "terraform"
-      Owner       = "cloud-infrastructure"
+      Owner       = "your-team"
     }
   }
 }

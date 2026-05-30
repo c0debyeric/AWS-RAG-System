@@ -16,7 +16,7 @@ The SharePoint sync Lambda uses Microsoft Graph API to read documents. You need 
 
 3. **Register the app:**
    - Name: `teams-rag-chatbot-sharepoint-sync`
-   - Supported account types: *Accounts in this organizational directory only (RCCL only - Single tenant)*
+   - Supported account types: *Accounts in this organizational directory only (Single tenant)*
    - Redirect URI: Leave blank
    - Click **Register**
 
@@ -28,7 +28,7 @@ The SharePoint sync Lambda uses Microsoft Graph API to read documents. You need 
    - Go to *API permissions → Add a permission*
    - Select **Microsoft Graph → Application permissions**
    - Search for and add: `Sites.Read.All`
-   - Click **Grant admin consent for RCCL** (requires admin rights)
+   - Click **Grant admin consent for your organization** (requires admin rights)
 
 6. **Create a client secret:**
    - Go to *Certificates & secrets → New client secret*
@@ -54,7 +54,7 @@ $env:TF_VAR_sharepoint_client_secret = "<your-client-secret>"
 The bot needs an Azure Bot Service registration to communicate with Microsoft Teams.
 
 ### Prerequisites
-- An Azure subscription (the RCCL tenant likely already has one)
+- An Azure subscription (your tenant likely already has one)
 - If not, create a free Azure account at [azure.microsoft.com](https://azure.microsoft.com/)
 
 ### Steps

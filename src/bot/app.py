@@ -89,7 +89,20 @@ def _send_reply(service_url: str, conversation_id: str, activity_id: str, text: 
 
 
 def handler(event, context):
-    """Lambda handler for Bot Framework messages via API Gateway."""
+    """Lambda handler for Bot Framework messages via API Gateway.
+
+    Also supports direct invocation from the unified bot router:
+        {"direct_query": true, "query": "...", "user_id": "..."}
+    """
+    # Direct invocation from the bot router (not via API Gateway)
+    if event.get("direct_query"):
+        query = event.get("query", "").strip()
+        user_id = event.get("user_id", "")
+        if not query:
+            return {"statusCode": 400, "answer": "No query provided."}
+        answer = _handle_query(query, user_id)
+        return {"statusCode": 200, "answer": answer}
+
     body = json.loads(event.get("body", "{}"))
     activity_type = body.get("type")
 

@@ -2,9 +2,9 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
   "manifestVersion": "1.17",
   "version": "1.0.0",
-  "id": "a4ffa7bd-a256-4daf-9a86-43e311049b20",
+  "id": "{{BOT_APP_ID}}",
   "developer": {
-    "name": "CIS Team",
+    "name": "Your Team Name",
     "websiteUrl": "https://github.com",
     "privacyUrl": "https://github.com",
     "termsOfUseUrl": "https://github.com"
@@ -24,7 +24,7 @@
   "accentColor": "#6366f1",
   "bots": [
     {
-      "botId": "a4ffa7bd-a256-4daf-9a86-43e311049b20",
+      "botId": "{{BOT_APP_ID}}",
       "scopes": ["personal", "team", "groupChat"],
       "supportsFiles": false,
       "isNotificationOnly": false,
@@ -63,6 +63,6 @@
   ],
   "permissions": ["identity", "messageTeamMembers"],
   "validDomains": [
-    "bahplm89vd.execute-api.us-east-1.amazonaws.com"
+    "{{API_GATEWAY_DOMAIN}}.execute-api.{{AWS_REGION}}.amazonaws.com"
   ]
 }

@@ -161,9 +161,9 @@ def package_sharepoint_sync():
         print(f"  Created {output}")
 
 
-AWS_PROFILE = "shared"
+AWS_PROFILE = "default"
 AWS_REGION = "us-east-1"
-S3_BUCKET = "teams-rag-chatbot-dev-documents-044061434394"
+S3_BUCKET = "your-lambda-artifacts-bucket"
 S3_PREFIX = "lambda-artifacts"
 
 # 50 MB — Lambda direct upload limit

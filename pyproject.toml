@@ -1,7 +1,7 @@
 [project]
-name = "rag-knowledge-base"
-version = "0.2.0"
-description = "RAG Knowledge Platform — custom pipeline on AWS (Bedrock Claude + Titan embeddings, pgvector)"
+name = "enterprise-rag-chatbot"
+version = "1.0.0"
+description = "Production RAG chatbot — indexes SharePoint docs, generates cited answers via Amazon Bedrock (Claude + Titan), serves through Microsoft Teams"
 requires-python = ">=3.13"
 dependencies = [
     "boto3>=1.36,<2",

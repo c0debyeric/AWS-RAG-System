@@ -37,9 +37,9 @@ SUPPORTED_EXTENSIONS = {
 
 # Folders to skip during sync (case-insensitive prefix match)
 EXCLUDED_FOLDERS = {
-    "tools/scoutsuite-master",
-    "azure invoices",
-    "aws invoices",
+    # Add folder paths to exclude from sync, e.g.:
+    # "archive/old-docs",
+    # "internal-only",
 }
 
 
@@ -103,11 +103,11 @@ def authenticate(creds):
 
 def get_site_id(access_token):
     """Get the SharePoint site ID from the site URL."""
-    # Parse site URL: https://rccl.sharepoint.com/sites/CloudInfrastructureServices
+    # Parse site URL: https://your-tenant.sharepoint.com/sites/YourSite
     from urllib.parse import urlparse
     parsed = urlparse(SHAREPOINT_SITE_URL)
-    hostname = parsed.hostname  # rccl.sharepoint.com
-    site_path = parsed.path.rstrip("/")  # /sites/CloudInfrastructureServices
+    hostname = parsed.hostname  # your-tenant.sharepoint.com
+    site_path = parsed.path.rstrip("/")  # /sites/YourSite
 
     url = f"{GRAPH_API_BASE}/sites/{hostname}:{site_path}"
     headers = {"Authorization": f"Bearer {access_token}"}
