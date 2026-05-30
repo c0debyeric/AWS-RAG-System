@@ -1,21 +1,21 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
   "manifestVersion": "1.17",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "id": "{{BOT_APP_ID}}",
   "developer": {
-    "name": "Your Team Name",
+    "name": "CIS Team",
     "websiteUrl": "https://github.com",
     "privacyUrl": "https://github.com",
     "termsOfUseUrl": "https://github.com"
   },
   "name": {
-    "short": "RAG Assistant",
-    "full": "Internal Knowledge RAG Assistant"
+    "short": "CIS Assistant",
+    "full": "CIS Cloud Infrastructure Assistant"
   },
   "description": {
-    "short": "Ask questions about internal documentation",
-    "full": "AI-powered assistant that answers questions using internal team documentation from SharePoint, runbooks, and other knowledge sources. Powered by RAG (Retrieval-Augmented Generation) with source citations."
+    "short": "Knowledge base and AWS account provisioning in one bot",
+    "full": "Unified AI assistant: ask questions about internal documentation (RAG) or provision and configure AWS accounts — all from Microsoft Teams."
   },
   "icons": {
     "color": "color.png",
@@ -33,28 +33,24 @@
           "scopes": ["personal"],
           "commands": [
             {
+              "title": "menu",
+              "description": "Show the mode selector to switch between Knowledge Base and Account Setup"
+            },
+            {
               "title": "What is the deployment checklist?",
-              "description": "Get the production deployment checklist steps"
+              "description": "Ask the knowledge base about deployment procedures"
             },
             {
               "title": "How do I restart a server?",
               "description": "Server restart procedure and approvals"
             },
             {
-              "title": "What is the incident response process?",
-              "description": "Incident severity levels, roles, and escalation"
+              "title": "I need a new dev account",
+              "description": "Start the AWS account provisioning workflow"
             },
             {
-              "title": "How do I back up the database?",
-              "description": "Database backup runbook and restore steps"
-            },
-            {
-              "title": "How do I onboard a new AWS account?",
-              "description": "AWS account onboarding checklist"
-            },
-            {
-              "title": "How to spin up EC2 with Terraform?",
-              "description": "Terraform EC2 guide using HCP Terraform"
+              "title": "Set up account 123456789012",
+              "description": "Configure an existing AWS account with networking and governance"
             }
           ]
         }
